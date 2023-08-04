@@ -1,6 +1,6 @@
 package com.example.simplehr02.data.employee.model;
 
-import com.example.simplehr02.data.common.enums.Sex;
+import com.example.simplehr02.data.common.enums.Gender;
 import com.example.simplehr02.data.employee.entity.EmployeeEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,7 +18,7 @@ public class Employee {
     private String firstName;
     private String middleName;
     private Date birthdate;
-    private Sex sex;
+    private Gender gender;
     private Long userId;
 
     public static Employee toModel(EmployeeEntity entity) {
@@ -27,8 +27,8 @@ public class Employee {
         model.setFirstName(entity.getFirstName());
         model.setLastName(entity.getLastName());
         model.setBirthdate(entity.getBirthdate());
-        model.setSex(entity.getSex());
-        model.setUserId(entity.getUser().getId());
+        model.setGender(entity.getGender());
+        model.setUserId(entity.getUserId());
         return model;
     }
 }

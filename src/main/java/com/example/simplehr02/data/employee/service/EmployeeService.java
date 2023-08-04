@@ -1,5 +1,7 @@
 package com.example.simplehr02.data.employee.service;
 
+import com.example.simplehr02.data.basic.exception.UserNotFoundException;
+import com.example.simplehr02.data.basic.repository.UserRepo;
 import com.example.simplehr02.data.employee.entity.EmployeeEntity;
 import com.example.simplehr02.data.employee.exception.EmployeeAlredyExistException;
 import com.example.simplehr02.data.employee.exception.EmployeeNotFoundException;
@@ -11,11 +13,11 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestPart;
+
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class EmployeeService {
@@ -25,8 +27,12 @@ public class EmployeeService {
     @Autowired
     private Validator validator;
 
+    @Autowired
+    private UserRepo userRepo;
+
     public EmployeeEntity create(Employee employee) throws EmployeeAlredyExistException,
-            UserAppointedForOtherEmployee, ConstraintViolationException {
+            UserAppointedForOtherEmployee, ConstraintViolationException,
+            UserNotFoundException {
 
         Set<ConstraintViolation<Employee>> violations = validator.validate(employee);
         if (!violations.isEmpty()) {
@@ -40,23 +46,39 @@ public class EmployeeService {
         if (employeeRepo.findByFirstNameAndLastName(employee.getFirstName(), employee.getLastName()) != null) {
             throw new EmployeeAlredyExistException(employee.getFirstName(), employee.getLastName());
         }
+        if (employee.getUserId() != null && userRepo.findById(employee.getUserId()).orElse(null) == null) {
+            throw new UserNotFoundException(employee.getUserId());
+        }
         if (employee.getUserId() != null && employeeRepo.findByUserId(employee.getUserId()) != null) {
             throw new UserAppointedForOtherEmployee(employee.getUserId());
         }
         return employeeRepo.save(EmployeeEntity.toEntity(employee));
     }
 
-    @GetMapping
-    public List<EmployeeEntity> getAll() {
-        return (List<EmployeeEntity>) employeeRepo.findAll();
+    public List<Employee> getAll() {
+        List<EmployeeEntity> entity = (List<EmployeeEntity>) employeeRepo.findAll();
+        return entity.stream().map(employee -> Employee.toModel(employee)).collect(Collectors.toList());
     }
 
-    @GetMapping("{id}")
-    public EmployeeEntity get(@RequestPart Long id) throws EmployeeNotFoundException {
-        if (employeeRepo.findById(id) != null) {
-            throw new EmployeeNotFoundException("Сотрудник не найден");
+    public Employee getById(Long id) throws EmployeeNotFoundException {
+        employeeRepo.findById(id).orElseThrow(() -> new EmployeeNotFoundException(id));
+        return Employee.toModel(employeeRepo.findById(id).get());
+    }
+
+    public Employee update(Employee employee) throws EmployeeNotFoundException ,
+            EmployeeAlredyExistException, UserNotFoundException ,
+            UserAppointedForOtherEmployee {
+
+        if (employeeRepo.findByFirstNameAndLastName(employee.getFirstName(), employee.getLastName()) != null) {
+            throw new EmployeeAlredyExistException(employee.getFirstName(), employee.getLastName());
         }
-        return employeeRepo.findById(id).get();
+        if (employee.getUserId() != null && userRepo.findById(employee.getUserId()).orElse(null) == null) {
+            throw new UserNotFoundException(employee.getUserId());
+        }
+        if (employee.getUserId() != null && employeeRepo.findByUserId(employee.getUserId()) != null) {
+            throw new UserAppointedForOtherEmployee(employee.getUserId());
+        }
+        return Employee.toModel(employeeRepo.save(EmployeeEntity.toEntity(employee)));
     }
 
 }

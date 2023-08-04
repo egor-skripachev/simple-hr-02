@@ -55,7 +55,8 @@ public class UserService {
         if (user.getPassword() == null)
             user.setPassword(userById.getPassword());
 
-        if (userRepo.findByUsername(user.getUsername()) != null)
+        UserEntity userByUsername = userRepo.findByUsername(user.getUsername());
+        if (userByUsername != null && userByUsername.getId() != user.getId())
             throw new UserAlreadyExistException(user.getUsername());
 
         return User.toModel(userRepo.save(user));

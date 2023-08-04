@@ -1,10 +1,12 @@
 package com.example.simplehr02.data.employee.entity;
 
 import com.example.simplehr02.data.basic.entity.UserEntity;
-import com.example.simplehr02.data.common.enums.Sex;
+import com.example.simplehr02.data.common.enums.Gender;
 import com.example.simplehr02.data.employee.model.Employee;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,18 +23,18 @@ public class EmployeeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
+    @NotEmpty
     private String lastName;
-    @NotBlank
+    @NotEmpty
     private String firstName;
     private String middleName;
     private Date birthdate;
-    @Enumerated
-    private Sex sex;
 
-    @OneToOne
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
+    @Enumerated
+    @NotNull
+    private Gender gender;
+
+    private Long userId;
 
 
     public static EmployeeEntity toEntity(Employee model) {
@@ -40,11 +42,10 @@ public class EmployeeEntity {
         entity.setId(model.getId());
         entity.setFirstName(model.getFirstName());
         entity.setLastName(model.getLastName());
+        entity.setMiddleName(model.getMiddleName());
         entity.setBirthdate(model.getBirthdate());
-        entity.setSex(model.getSex());
-        UserEntity user = new UserEntity();
-        user.setId(model.getUserId());
-        entity.setUser(user);
+        entity.setGender(model.getGender());
+        entity.setUserId(model.getUserId());
         return entity;
     }
 }

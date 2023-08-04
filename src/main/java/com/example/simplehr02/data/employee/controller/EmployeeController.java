@@ -1,6 +1,7 @@
 package com.example.simplehr02.data.employee.controller;
 
 import com.example.simplehr02.data.employee.entity.EmployeeEntity;
+import com.example.simplehr02.data.employee.exception.EmployeeNotFoundException;
 import com.example.simplehr02.data.employee.model.Employee;
 import com.example.simplehr02.data.employee.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,17 @@ public class EmployeeController {
     public ResponseEntity getAll() {
         try {
             return ResponseEntity.ok(employeeService.getAll());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("{id}")
+    public ResponseEntity getById(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(employeeService.getById(id));
+        } catch (EmployeeNotFoundException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
